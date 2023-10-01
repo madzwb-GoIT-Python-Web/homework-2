@@ -30,7 +30,7 @@ RUN adduser \
 
 # RUN updates
 RUN apt-get update
-RUN pip install --upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
 # Install requirements
 RUN apt-get install -y git
 RUN apt-get install -y python3-psycopg2
@@ -45,14 +45,19 @@ RUN apt-get install -y python3-psycopg2
 
 # RUN python -m pip list
 # Switch to the non-privileged user to run the application.
-USER appuser
+# USER appuser
 
 # Copy the source code into the container.
 COPY . .
 
-RUN pip install .
+RUN pip install  --no-cache-dir .
+
+USER appuser
+
 # Expose the port that the application listens on.
 EXPOSE 8000
 
+
 # Run the application.
-CMD python -m pa_fastapi.main
+CMD python -m pa_fastapi.main 
+#alembic -c pa_fastapi/database/alembic.ini upgrade head && 

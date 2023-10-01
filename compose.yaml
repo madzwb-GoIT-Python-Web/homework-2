@@ -10,12 +10,31 @@
 services:
   server:
     env_file:
-      .env
-    build:
-      context: .
+      - ./env/.env
+    image: pa_fastapi
+    # build:
+    #   context: .
     ports:
       - ${FASTAPI_PORT}:${FASTAPI_PORT}
 
+    healthcheck:
+      test: [ "CMD", "curl --fail http://localhost:8000/health/  || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    secrets:
+      - fastapi
+      - mail
+      - db-password
+    environment:
+      - SECRET_KEY_FILE=/run/secrets/fastapi
+      - MAIL_PASSWORD_FILE=/run/secrets/mail
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    # command: '/bin/sh -c "cat $$ALEMBIC/alembic/env.py" && /bin/sh -c "cat $$ALEMBIC/alembic.ini" && /bin/sh -c "alembic -c $$ALEMBIC/alembic.ini upgrade head"'
+    # alembic -c ${ALEMBIC}/alembic.ini upgrade head
+    #ls && cd /usr/local/lib/python3.11/site-packages/pa_fastapi/database && alembic upgrade head && cd / && python -m pa_fastapi.main
+      # - alembic -c /usr/local/lib/python3.11/site-packages/pa_fastapi/database/alembic.ini upgrade head
+      #  && python -m pa_fastapi.main"
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
 # start the database before your application. The `db-data` volume persists the
@@ -30,7 +49,7 @@ services:
 
   db:
     env_file:
-      postgres.env
+      - ./env/postgres.env
     image: postgres
     restart: always
     user: ${POSTGRES_USER}
@@ -52,7 +71,7 @@ services:
   
   cache:
     env_file:
-      redis.env
+      - ./env/redis.env
     image: redis
     restart: always
     ports:
@@ -81,5 +100,10 @@ volumes:
       device: /d/wsl/docker/pa/cache
 secrets:
   db-password:
-    file: password.txt
+    file: secrets/postgres.key
+  fastapi:
+    file: secrets/fastapi.key
+  mail:
+    file: secrets/mail.key
+  
 
