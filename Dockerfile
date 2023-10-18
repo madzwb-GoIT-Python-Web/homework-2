@@ -4,7 +4,7 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-ARG PYTHON_VERSION=3.11.5
+ARG PYTHON_VERSION=3.11.6
 FROM python:${PYTHON_VERSION}-slim as base
 
 # Prevents Python from writing pyc files.
@@ -33,6 +33,7 @@ RUN apt-get update
 RUN pip install --no-cache-dir --upgrade pip
 # Install requirements
 RUN apt-get install -y git
+RUN apt-get install -y libpq-dev
 RUN apt-get install -y python3-psycopg2
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
@@ -49,6 +50,9 @@ RUN apt-get install -y python3-psycopg2
 
 # Copy the source code into the container.
 COPY . .
+
+RUN chown -R appuser:appuser /app
+RUN chmod 755 /app
 
 RUN pip install  --no-cache-dir .
 
